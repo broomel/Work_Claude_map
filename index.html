@@ -123,10 +123,13 @@ svg{display:block;width:100%;height:auto}
 .bl button em{font-style:normal;font-size:10.5px;color:var(--mute);margin-left:4px;letter-spacing:.04em}
 .bnote{margin:0 0 6px;font-size:12px;color:var(--mute)}
 .bl button b{font:700 16px var(--display)}
-.xtra{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:4px 16px;margin-top:12px;font-size:11.5px;color:var(--faint);line-height:1.5}
-.xtra h3{margin:0 0 2px;font:600 10.5px var(--body);letter-spacing:.08em;text-transform:uppercase;color:var(--faint)}
+.xtra{display:grid;grid-template-columns:1fr 1fr;gap:14px 18px;margin-top:14px;font-size:13px;color:#b7c4cf;line-height:1.55}
+.xtra h3{margin:0 0 4px;font:700 12px var(--body);letter-spacing:.08em;text-transform:uppercase;color:#eaf0f4}
 .xtra .row{display:flex;justify-content:space-between;gap:8px;font-variant-numeric:tabular-nums}
-.xtra .row b{font-weight:500;color:var(--mute)}
+.xtra .row b{font-weight:600;color:#eaf0f4}
+.lgd2{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:8px;margin:8px 0 4px;font:600 12px var(--body);color:#b7c4cf;font-variant-numeric:tabular-nums}
+.lgd2 i{height:8px;border-radius:4px}
+.lgd2[hidden]{display:none}
 .lgd{height:6px;border-radius:3px;margin:4px 0 2px}
 .foot{color:var(--faint);font-size:12px;margin-top:10px;line-height:1.5}
 @media (prefers-reduced-motion:reduce){.c{transition:none}}
@@ -149,6 +152,7 @@ svg{display:block;width:100%;height:auto}
   </div><p class="basis" id="basis"></p></div><button id="zfit" class="zbtn" hidden>Fit map</button></div>
 <div class="det" id="detail" hidden></div>
 <div class="blist" id="blist" hidden><h3>All borders: where it is cheaper across the border</h3><p class="bnote">Land borders and main ferry routes (marked «ferry»). Filter by size of the difference:</p><div class="gaps" id="gaps" role="group" aria-label="Show price gaps"></div><div class="bl" id="blrows"></div></div>
+<div class="lgd2" id="lgd2"></div>
 <p class="vatline" id="vatline"></p>
 <div class="xtra" id="xtra"></div>
 <p class="foot" id="foot"></p>
@@ -258,12 +262,12 @@ function extra(){
   const dd=k=>conv(k,R[k].after)-conv(k,R[k].after-R[k].dd);
   const mv=MAP.slice().sort((a,b)=>dd(a)-dd(b)); const down=mv.slice(0,3), up=mv.filter(k=>dd(k)>0.0005).slice(-2).reverse();
   const gaps=Object.keys(GEO.borders).filter(p=>!p.split('-').some(x=>NOV(x))).map(p=>{const [x,y]=p.split('-');const d=P(x)-P(y);return {from:d>0?x:y,to:d>0?y:x,c:Math.abs(d)}}).sort((a,b)=>b.c-a.c).slice(0,4);
-  let h=`<div><h3>Colour scale, €/l</h3><div class="lgd" style="background:linear-gradient(90deg,${C.good},${C.mid},${C.bad})"></div>${row(f3(LO),f3(HI))}</div>`;
-  h+=`<div><h3>Cheapest</h3>${top.map(k=>row(lab(k)+star(k),f3(P(k)))).join('')}</div>`;
-  h+=`<div><h3>Change vs ${DATA.hdates[4]}</h3>${[...down,...up].map(k=>row(lab(k),ct(dd(k))+' ct')).join('')}</div>`;
-  h+=`<div><h3>Biggest border differences</h3>${gaps.map(g=>row(lab(g.from)+' → '+lab(g.to),Math.round(g.c*100)+' ct')).join('')}</div>`;
-  h+=`<div><h3>Not on the map</h3>${SIDE.map(k=>row(R[k].name+star(k),f3(P(k)))).join('')}</div>`;
-  h+=`<div><h3>Excise refund, €/l</h3>${['IT','BE','FR','ES'].map(k=>row(lab(k),f3(R[k].ref))).join('')}</div>`;
+  const nm=k=>R[k].name;
+  let h=`<div><h3>Cheapest today, €/l</h3>${top.map(k=>row(nm(k)+star(k),f3(P(k)))).join('')}</div>`;
+  h+=`<div><h3>Biggest border gaps</h3>${gaps.map(g=>row(lab(g.from)+' → '+lab(g.to),Math.round(g.c*100)+' ct')).join('')}</div>`;
+  h+=`<div><h3>Excise refund, €/l</h3>${['IT','BE','FR','ES'].map(k=>row(nm(k),f3(R[k].ref))).join('')}</div>`;
+  h+=`<div><h3>Not on the map, €/l</h3>${SIDE.map(k=>row(R[k].name+star(k),f3(P(k)))).join('')}</div>`;
+  const lg=document.getElementById('lgd2');lg.hidden=view!=='heat';lg.innerHTML=`<span>${f3(LO)}</span><i style="background:linear-gradient(90deg,${C.good},${C.mid},${C.bad})"></i><span>${f3(HI)}</span>`;
   document.getElementById('xtra').innerHTML=h;
   document.getElementById('vatline').textContent=vatAll()?'Prices exclude VAT. * UA, MD, TR, GE, AZ, KZ: VAT cannot be refunded, price includes VAT.':vatSet.size===0?'Prices include VAT.':'Prices include VAT, except countries where you marked VAT as refunded: '+[...vatSet].map(lab).join(', ')+'. Tap a country to change.';
 }
@@ -358,7 +362,7 @@ function pick(k){
   showDet(h);
 }
 document.getElementById('mode').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.t==='vat'){vatSet=vatSet.size>0?new Set():new Set(EU)}else excOn=!excOn;saveSet();const open=!document.getElementById('detail').hidden;render();if(sel&&open)pick(sel)});
-document.getElementById('tabs').addEventListener('click',e=>{const v=e.target.dataset.v;if(!v)return;view=v;location.hash=v;st.set('view',v);render()});
+document.getElementById('tabs').addEventListener('click',e=>{const v=e.target.dataset.v;if(!v)return;if(v!==view)Z=null;view=v;location.hash=v;st.set('view',v);render()});
 document.getElementById('zfit').addEventListener('click',()=>{Z={x:0,y:0,w:GEO.W,h:GEO.H};const s=document.querySelector('#stage svg');if(s)applyZ(s)});
 document.getElementById('blist').addEventListener('click',e=>{const b=e.target.closest('button');if(!b||!b.dataset.f)return;borderK=b.dataset.f;st.set('bk',borderK);sel=null;document.getElementById('detail').hidden=true;render();document.getElementById('stagew').scrollIntoView({block:'start',behavior:'smooth'})});
 document.getElementById('gaps').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const k=b.dataset.g;GAPS[k]=!GAPS[k];if(!Object.values(GAPS).some(Boolean))GAPS[k]=true;render()});
