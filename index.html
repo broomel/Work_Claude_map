@@ -297,7 +297,7 @@ const views={
    MAP.forEach(k=>{ if(k===refK) chip(s,k,f3(P(k)),null,{bg:'#5aa9e6',fg:'#06121c',code:'BASE '+lab(k)}); else {const d=P(k)-ref; chip(s,k,ct(d),null,{fg:Math.abs(d)<0.0095?'#eaf0f4':d<0?C.good:C.bad,code:lab(k)+' '+f3(P(k))})}});
    return s},
 };
-const HINT={heat:'Where diesel is cheaper today. Green: cheap, red: expensive. Tap a country to see its details below the map.',
+const HINT={heat:'Where diesel is cheaper today. Green: cheap, red: expensive. Tap a country to see its details below the map. Swipe the map sideways to switch views.',
  borders:'Tap a country (shown blue) to compare it with its neighbours by land and ferry. Minus = cheaper, plus = more expensive, in ct/l. Number colour = size of the difference, as in the ranking below.',
  compare:'Tap a country to make it the base (marked blue). Every other country shows the difference in ct/l: green = cheaper, red = more expensive.'};
 
@@ -315,12 +315,13 @@ function attachZoom(svg){svg.classList.add('zoomable');applyZ(svg);
   const pts=new Map();let last=null,moved=0,lastTap=0,lastTapPt=null;
   const toSvg=(cx,cy)=>{const r=svg.getBoundingClientRect();return [Z.x+(cx-r.left)/r.width*Z.w,Z.y+(cy-r.top)/r.height*Z.h]};
   const state=()=>{const a=[...pts.values()];if(a.length===1)return {cx:a[0].x,cy:a[0].y,d:0};const [p,q]=a;return {cx:(p.x+q.x)/2,cy:(p.y+q.y)/2,d:Math.hypot(p.x-q.x,p.y-q.y)}};
-  svg.addEventListener('pointerdown',e=>{pts.set(e.pointerId,{x:e.clientX,y:e.clientY});last=state();if(pts.size===1)moved=0});
+  let sw=null;svg.addEventListener('pointerdown',e=>{pts.set(e.pointerId,{x:e.clientX,y:e.clientY});last=state();if(pts.size===1){moved=0;sw={x:e.clientX,y:e.clientY,t:Date.now()}}else sw=null});
   svg.addEventListener('pointermove',e=>{if(!pts.has(e.pointerId))return;pts.set(e.pointerId,{x:e.clientX,y:e.clientY});const s=state();const r=svg.getBoundingClientRect();
     if(pts.size>=2&&last&&last.d>0){const [px,py]=toSvg(s.cx,s.cy);zoomAt(svg,px,py,s.d/last.d);moved+=99}
     if(last&&(pts.size>=2||Z.w<GEO.W*0.98)){const dx=(s.cx-last.cx)/r.width*Z.w,dy=(s.cy-last.cy)/r.height*Z.h;Z.x-=dx;Z.y-=dy;clampZ();applyZ(svg);moved+=Math.abs(s.cx-last.cx)+Math.abs(s.cy-last.cy)}
     last=s});
   const up=e=>{pts.delete(e.pointerId);last=pts.size?state():null;
+    if(pts.size===0&&sw&&e.type==='pointerup'&&Z.w>=GEO.W*0.98){const dx=e.clientX-sw.x,dy=e.clientY-sw.y;if(Math.abs(dx)>60&&Math.abs(dx)>1.5*Math.abs(dy)&&Date.now()-sw.t<700){const O=['heat','borders','compare'];const i=O.indexOf(view)+(dx<0?1:-1);sw=null;if(i>=0&&i<O.length){suppressClick=true;setTimeout(()=>suppressClick=false,50);document.getElementById('v-'+O[i]).click()}return}}
     if(pts.size===0){if(moved>6){suppressClick=true;setTimeout(()=>suppressClick=false,50)}
       else if(e.type==='pointerup'){const now=Date.now();if(now-lastTap<300&&lastTapPt&&Math.hypot(e.clientX-lastTapPt[0],e.clientY-lastTapPt[1])<30){const [px,py]=toSvg(e.clientX,e.clientY);clearTimeout(tapTimer);if(Z.w<GEO.W*0.98){Z={x:0,y:0,w:GEO.W,h:GEO.H};applyZ(svg)}else zoomAt(svg,px,py,2.5);lastTap=0;suppressClick=true;setTimeout(()=>suppressClick=false,50)}else{lastTap=now;lastTapPt=[e.clientX,e.clientY]}}}};
   svg.addEventListener('pointerup',up);svg.addEventListener('pointercancel',up);
