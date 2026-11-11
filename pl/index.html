@@ -466,6 +466,12 @@ document.getElementById('mode').addEventListener('click',e=>{const b=e.target.cl
 document.getElementById('tabs').addEventListener('click',e=>{const v=e.target.dataset.v;if(!v)return;if(v!==view)Z=null;view=v;location.hash=v;st.set('view',v);render()});
 
 
+
+// auto refresh (owner 11.11.2026): when the page comes back to the screen and every 10 minutes while visible, check version.json; new prices -> reload
+(function(){const vurl=(LANG==='pl'?'../':'')+'version.json';let busy=false;
+ async function check(){if(busy||document.visibilityState!=='visible')return;busy=true;try{const r=await fetch(vurl+'?t='+Date.now(),{cache:'no-store'});if(r.ok){const v=await r.json();if(v.date&&(v.date!==DATA.date||v.time!==DATA.time)){const u=new URL(location.href);u.searchParams.set('r',Date.now());location.replace(u.toString());return}}}catch(e){}busy=false}
+ document.addEventListener('visibilitychange',check);window.addEventListener('pageshow',e=>{if(e.persisted)check()});window.addEventListener('focus',check);setInterval(check,10*60*1000);setTimeout(check,3000);
+})();
 // pull down at the top of the page to refresh (owner 11.11.2026); keeps ?gross and the language, bypasses cache
 (function(){let y0=null,x0=0,arm=false;const el=document.createElement('div');el.id='ptr';document.body.appendChild(el);
  const zoomed=()=>Z&&Z.w<GEO.W*0.98;
