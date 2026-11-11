@@ -284,6 +284,12 @@ function extra(){
   document.getElementById('xtra').innerHTML=h;
   document.getElementById('vatline').textContent=vatAll()?'* UA, MD, TR, GE, AZ, KZ: VAT is not refunded':vatSet.size===0?'Prices include VAT.':'Prices include VAT, except countries where you marked VAT as refunded: '+[...vatSet].map(lab).join(', ')+'. Tap a country to change.';
 }
+const SUPS={'the import company leclerc':'Leclerc','varo preem sverige':'Preem','uno-x mobility norge':'Uno-X','neste markkinointi':'Neste','orlen unipetrol rpa':'Orlen','i.c.s. bemol retail':'Bemol','ooo auto transit':'Auto Transit','too sinooil':'Sinooil','noil station':'Noil','morganti oil':'Morganti',"mo-to 95'":'MO-TO 95','viada baltija':'Viada','romac fuels':'Romac','ap truck mobility':'AP Truck','olerex':'Olerex','sun petroleum georgia':'Sun Petroleum','socar petroleum':'Socar','fueltogo otomasyon':'Fueltogo','virsi-a':'Virši','q1 energie':'Q1','morgan fuels ireland':'Morgan Fuels','morgan fuels uk':'Morgan Fuels','oktan tankstellen':'Oktan','goʼon gruppen':'Go’On','dalhuisen retail':'Dalhuisen','tov parallel-m ltd':'Parallel'};
+function shortSup(n){if(!n)return '';const k=n.trim().toLowerCase();if(SUPS[k])return SUPS[k];
+  let t=' '+n.trim()+' ';
+  t=t.replace(/\s(OOO|TOO|TOV|LTD|Ltd|LLC|S\.?A\.?|SpA|S\.?p\.?A\.?|S\.?r\.?l\.?|GmbH|mbH|AG|AB|AS|ASA|A\/S|Oy|Oyj|B\.?V\.?|N\.?V\.?|Sp\. ?z ?o\.?o\.?|s\.r\.o\.|a\.s\.|Kft\.?|Zrt\.?|d\.o\.o\.|EOOD|OOD|SRL|SIA|UAB|I\.C\.S\.|PLC|Inc\.?|& Co\.? KG|KG)(?=\s)/gi,' ');
+  t=t.replace(/\s(The Import Company|Retail|Mobility|Markkinointi|Otomasyon|Tankstellen|Gruppen|Group|Holding|Trading|Sverige|Norge|Ireland|UK|Georgia|Baltija|Deutschland|Polska|France|Italia|Espana|España|Bulgaria|Romania|România|Hungary|Magyarország|Slovakia|Slovensko|Czech|Česko|Austria|Österreich|Belgium|België|Belgique|Nederland|Netherlands|Luxembourg|Danmark|Denmark|Suomi|Finland|Eesti|Estonia|Latvija|Latvia|Lietuva|Lithuania|Slovenija|Slovenia|Ukraine|Ukraina|Moldova|Türkiye|Turkey|Kazakhstan|Azerbaijan|Portugal|Hellas|Greece|Hrvatska|Croatia|Serbia|Srbija)(?=\s)/gi,' ');
+  t=t.replace(/\s+/g,' ').trim();return t||n}
 function basisText(){return (vatAll()?'net':vatSet.size===0?'gross':'mixed VAT')+'\n'+(excOn?'after excise refund':'before excise refund')}
 function shownDot(){const c=vatAll()?(excOn?'#4c8dff':'#ffb020'):(excOn?'#20b2aa':'#c86bd6');return 'background:'+c+';box-shadow:0 0 0 3px '+c+'33'}
 const views={
@@ -366,11 +372,11 @@ function pick(k){
   const rk=rank().indexOf(k)+1; const dd=conv(k,r.after)-conv(k,r.after-r.dd);
   const cls=v=>v<-0.0049?'pos':v>0.0049?'neg':'zero';
   let h=`<div class="r1"><span class="nm">${FLAG[k]||''} ${r.name}${star(k)}</span><span class="pv">${f3(P(k))}</span><span class="mu">€/l</span><button class="x" aria-label="Close">×</button></div>
-  ${k==='PL'?'':`<div class="mu">${r.sup}${r.st?' · '+r.st:''}${r.ref?` · excise refund ${f3(r.ref)}`:''}${NOV(k)?' · VAT is not refunded, price includes VAT':''}</div>`}`;
+  ${k==='PL'?'':`<div class="mu">${shortSup(r.sup)}${r.st?' · '+r.st:''}${r.ref?` · excise refund ${f3(r.ref)}`:''}${NOV(k)?' · VAT is not refunded, price includes VAT':''}</div>`}`;
   if(k==='PL') h+=`<div class="plt">${DATA.pl.map((p,i)=>`<div class="plr${i===0?' on':''}"><span>${p[0].replace('Spot Orlen','Spot').replace(/(\d)\.(\d)/g,'$1,$2').replace(/^Spot$/,'Spot, no discount')}</span><b>${f3(vatSet.has('PL')?p[1]:p[1]*(1+(p[2]||0)))}</b><em>${i===0?'on the map':''}</em></div>`).join('')}</div>`;
   if(!NOV(k)){const cell=(v,x)=>{const on=vatSet.has(k)===v&&excOn===x;return `<span class="pc${on?' on':''}"><i>${v?'Net':'Gross'}${r.ref?(x?', after refund':', before refund'):''}</i><b>${f3(price(k,r.after,v,x))}</b></span>`};
     h+=`<div class="pg">${cell(true,true)}${r.ref?cell(true,false):''}${cell(false,true)}${r.ref?cell(false,false):''}</div>`;
-    h+=`<label class="vt"><input type="checkbox" id="vtk" ${vatSet.has(k)?'checked':''}> VAT is refunded in ${r.name} (price without VAT)</label>`}
+    }
   if(nb.length) h+=`<div class="nb2">${nb.map(o=>`<span>${lab(o.n)} <b class="${cls(o.d)}">${ct(o.d)}</b></span>`).join('')}<span class="mu">ct/l vs neighbours</span></div>`;
   h+=spark(r.hist.map(v=>conv(k,v)));
   showDet(h);
