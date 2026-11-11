@@ -376,12 +376,12 @@ function pick(k){
   const nb=(NEI[k]||[]).map(n=>({n,d:P(n)-P(k)})).sort((a,b)=>a.d-b.d);
   const rk=rank().indexOf(k)+1; const dd=conv(k,r.after)-conv(k,r.after-r.dd);
   const cls=v=>v<-0.0049?'pos':v>0.0049?'neg':'zero';
-  let h=`<div class="r1"><span class="nm">${FLAG[k]||''} ${r.name}${star(k)}</span><span class="pv">${f3(P(k))}</span><span class="mu">€/l</span><button class="x" aria-label="Close">×</button></div>
+  let h=`<div class="r1"><span class="nm">${FLAG[k]||''} ${r.name}</span><span class="pv">${f3(P(k))}</span><span class="mu">€/l</span><button class="x" aria-label="Close">×</button></div>
   ${k==='PL'?'':`<div class="mu">${shortSup(r.sup)}${r.st?' · '+r.st:''}</div>`}`;
   /* 11.11.2026 (owner, variant 3): VAT and excise as a mini table, for every country */
   {const NOVR={UA:.2,MD:.2,TR:.2,GE:.18,AZ:.18,KZ:.16};const nov=NOV(k),vr=nov?(NOVR[k]||0):(r.vat||0);
    const va=nov?r.after-r.after/(1+vr):(r.after+(r.ref||0))*vr;const pct=(Math.round(vr*1000)/10+'%').replace('.',',');
-   if(vr) h+=`<div class="tg2"><em>VAT ${pct}</em><b>${f3(va)}</b>${nov?'<em class="n">not refunded, in the price</em>':'<em class="y">refunded</em>'}${r.ref?`<em>Excise</em><b>${f3(r.ref)}</b><em class="y">refunded</em>`:''}</div>`}
+   if(vr) h+=`<div class="tg2"><em>VAT ${pct}</em>${nov?'<em class="n" style="grid-column:span 2">not refunded</em>':`<b>${f3(va)}</b><em class="y">refunded</em>`}${r.ref?`<em>Excise</em><b>${f3(r.ref)}</b><em class="y">refunded</em>`:''}</div>`}
   if(k==='ES'&&DATA.es&&Object.keys(DATA.es).length){const zp=a=>f3(price('ES',a,vatSet.has('ES'),excOn));
     h+=`<div class="esA">${[['Irún','Irún (west)'],['La Jonquera','La Jonquera (east)']].filter(z=>(DATA.es[z[0]]||[]).length).map(z=>`<div><h4>${z[1]}</h4>${DATA.es[z[0]].map(e=>`<p><span>${e[0]}</span><b>${zp(e[3])}</b></p>`).join('')}</div>`).join('')}</div>`}
   if(k==='PL') h+=`<div class="plt">${DATA.pl.map((p,i)=>`<div class="plr${i===0?' on':''}"><span>${p[0].replace('Spot Orlen','Spot').replace(/(\d)\.(\d)/g,'$1,$2').replace(/^Spot$/,'Spot, no discount')}</span><b>${f3(vatSet.has('PL')?p[1]:p[1]*(1+(p[2]||0)))}</b><em>${i===0?'on the map':''}</em></div>`).join('')}</div>`;
