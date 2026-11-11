@@ -103,9 +103,9 @@ svg{display:block;width:100%;height:auto}
 .tg button[aria-pressed="true"] i{background:#33c27a;box-shadow:none}
 .tg button[aria-pressed="true"] i::after{left:13px}
 .tg button:focus-visible{outline:2px solid var(--ref);outline-offset:1px}
-.shown{position:absolute;right:8px;top:8px;z-index:2;margin:0;padding:0 10px}
+.shown{position:absolute;right:8px;top:8px;z-index:2;margin:0;padding:4px 11px 4px 10px;height:auto!important;border-radius:12px!important;line-height:1.15!important;font-size:11px!important}
 .shown i{flex:none;width:9px;height:9px;border-radius:50%}
-@media (max-width:359px){.ovl,.tg{gap:4px}.ovl{left:6px;top:6px}.shown{right:6px;top:6px}.tg button,.shown{height:21px;font-size:10px;gap:5px;padding:0 7px 0 4px}.shown{padding:0 7px}.tg button i{width:22px;height:13px}.tg button i::after{width:9px;height:9px}.tg button[aria-pressed="true"] i::after{left:11px}.shown i{width:7px;height:7px}}
+@media (max-width:359px){.ovl,.tg{gap:4px}.ovl{left:6px;top:6px}.shown{right:6px;top:6px}.tg button,.shown{height:21px;font-size:10px;gap:5px;padding:0 7px 0 4px}.shown{padding:3px 7px;font-size:9.5px!important}.tg button i{width:22px;height:13px}.tg button i::after{width:9px;height:9px}.tg button[aria-pressed="true"] i::after{left:11px}.shown i{width:7px;height:7px}}
 .det{margin-top:8px;background:var(--land);border:1px solid var(--edge);border-radius:12px;padding:10px 12px;display:grid;gap:6px;font-size:13px}
 .det .r1{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
 .det .nm{font:700 19px var(--display)}
@@ -279,7 +279,7 @@ function extra(){
   document.getElementById('xtra').innerHTML=h;
   document.getElementById('vatline').textContent=vatAll()?'* UA, MD, TR, GE, AZ, KZ: VAT is not refunded':vatSet.size===0?'Prices include VAT.':'Prices include VAT, except countries where you marked VAT as refunded: '+[...vatSet].map(lab).join(', ')+'. Tap a country to change.';
 }
-function basisText(){return (vatAll()?'net':vatSet.size===0?'gross':'mixed VAT')+' · '+(excOn?'after refund':'before refund')}
+function basisText(){return (vatAll()?'net':vatSet.size===0?'gross':'mixed VAT')+'\n'+(excOn?'after excise refund':'before excise refund')}
 function shownDot(){const c=vatAll()?(excOn?'#4c8dff':'#ffb020'):(excOn?'#20b2aa':'#c86bd6');return 'background:'+c+';box-shadow:0 0 0 3px '+c+'33'}
 const views={
  heat(){const s=svgBase(); paint(s,k=>heat(P(k)));
@@ -341,7 +341,7 @@ function pickPair(exp,cheap){sel=null;render();const d=P(exp)-P(cheap);
   <div class="mu">${R[cheap].name} ${f3(P(cheap))} · ${R[cheap].sup}${R[cheap].st?' · '+R[cheap].st:''}</div>`)}
 function render(){
   setScale(); const stage=document.getElementById('stage'); const node=views[view](); stage.replaceChildren(node); if(node.tagName==='svg') attachZoom(node); else document.getElementById('zfit').hidden=true;
-  document.getElementById('hint').textContent=HINT[view];document.getElementById('basis').lastChild.textContent='Prices: '+basisText();document.querySelector('#basis i').style.cssText=shownDot();
+  document.getElementById('hint').textContent=HINT[view];document.getElementById('basis').lastChild.innerHTML=('Prices: '+basisText()).replace('\n','<br>');document.querySelector('#basis i').style.cssText=shownDot();
   const gp=document.getElementById('gaps');
   const bl=document.getElementById('blist');bl.hidden=view!=='borders';
   if(view==='borders'){const rows=Object.keys(GEO.borders).map(p=>{const [a,b]=p.split('-');const d=P(a)-P(b);return {from:d>0?a:b,to:d>0?b:a,c:Math.abs(d)}}).filter(o=>{const bk=bucket(o.c);return bk&&GAPS[bk.k]}).sort((x,y)=>y.c-x.c);
