@@ -127,8 +127,8 @@ svg{display:block;width:100%;height:auto}
 .alr .iw,.lgx .iw{width:14px;height:14px;border-radius:50%;margin-top:2px;display:inline-grid;place-items:center;font-size:10px;line-height:1;color:#fff;background:#f08c00}.alr .iw.red{background:#e5484d}
 .lgx .sgx svg{width:17px;height:17px;display:block}.lgx .sgx{display:inline-block}
 .lgx{display:flex;flex-wrap:wrap;gap:4px 14px;justify-content:center;font-size:12px;color:var(--mute);margin:6px 0 0}.lgx span{display:inline-flex;gap:6px;align-items:center}.lgx .ib,.lgx .iw{margin-top:0}
-.ds{display:grid;grid-template-columns:repeat(10,1fr);gap:3px;text-align:center;font-size:11px}.ds div{border-radius:6px;padding:4px 0 3px;background:#16202a;color:var(--mute);line-height:1.25}.ds div b{display:block;font-size:12.5px;color:var(--ink);font-weight:600}.ds .ban{background:#5a1a1d;color:#ffd7d8}.ds .wx{background:#5a3d0a;color:#ffe2a8}.ds .wx.red{background:#6b1f22}.ds .both{background:linear-gradient(135deg,#5a1a1d 50%,#5a3d0a 50%);color:#fff}.ds .past{opacity:.35}.ds i{display:block;font-style:normal;font-size:10px;height:12px;letter-spacing:-.02em}
-.lgd3{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12px;color:var(--mute);margin-top:0}.lgd3 i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.ds{display:grid;grid-template-columns:repeat(10,1fr);gap:3px;text-align:center;font-size:11px}.ds div{border-radius:6px;padding:4px 0 3px;background:#16202a;color:var(--mute);line-height:1.25}.ds div b{display:block;font-size:12.5px;color:var(--ink);font-weight:600}.ds .ban{background:#5a1a1d;color:#ffd7d8}.ds .wx{background:#5a3d0a;color:#ffe2a8}.ds .wx.red{background:#6b1f22}.ds .both{background:linear-gradient(135deg,#5a1a1d 50%,#5a3d0a 50%);color:#fff}.ds .past{opacity:.35}.ds i{display:block;font-style:normal;font-size:10px;height:12px;letter-spacing:-.02em;white-space:nowrap}@media (max-width:389px){.ds{gap:2px}.ds div{padding:4px 0 3px;font-size:10px}.ds i{font-size:8.6px;letter-spacing:-.05em}.ds div b{font-size:12px}}
+.lgd3{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:13px;color:var(--ink);margin-top:2px}.lgd3 span{display:inline-flex;align-items:center;gap:6px}.lgd3 svg{width:20px;height:20px;flex:none}.ds .sgi{display:inline-block;width:13px;height:12px}.ds .sgi svg{width:13px;height:12px;display:block;margin:0 auto}
 .rw{margin-top:10px;border-top:1px solid #2b3742;padding-top:10px;display:grid;gap:6px}
 .rw h5{margin:0;font:600 11px var(--body);letter-spacing:.08em;text-transform:uppercase;color:var(--mute)}
 .rwi{display:grid;grid-template-columns:44px 1fr;column-gap:12px;align-items:start}
@@ -299,11 +299,13 @@ function alertHtml(k){const B=bans(k),W=weather(k);if(!B.length&&!W.length)retur
   const reg=w=>{const m=(w.area||'').match(/([A-ZÄÖÅÜÉ][\p{L}-]+)\s*$/u);return m?m[1]:''};
   let cells='';
   for(let i=0;i<10;i++){const a=st+i*D,e=a+D;const bb=B.filter(x=>x[0]<e&&x[1]>a);const ww=W.filter(w=>toWall(w.f)<e&&toWall(w.e)>a);
-    let t='';if(bb.length){const s0=Math.max(bb[0][0],a),e0=Math.min(bb[bb.length-1][1],e);t=pad(new Date(s0).getUTCHours())+'-'+(e0===e?'24':pad(new Date(e0).getUTCHours()))}else if(ww.length)t='❄';
+    let t='';if(bb.length){const s0=Math.max(bb[0][0],a),e0=Math.min(bb[bb.length-1][1],e);t=pad(new Date(s0).getUTCHours())+'-'+(e0===e?'24':pad(new Date(e0).getUTCHours()))}else if(ww.length)t=`<span class="sgi">${SIGN[ww.some(w=>w.t==='snow')?'snow':'cold']}</span>`;
     const cl=(bb.length&&ww.length?'both':bb.length?'ban':ww.length?('wx'+(ww.some(w=>w.lvl==='red')?' red':'')):'')+(e<=now?' past':'');
     const d=new Date(a);cells+=`<div class="${cl}">${d.toLocaleDateString('en-GB',{weekday:'short',timeZone:'UTC'}).slice(0,2)}<b>${d.getUTCDate()}</b><i>${t}</i></div>`}
   const wt=WT[alK(k)];const regs=[...new Set(W.map(reg).filter(Boolean))].slice(0,2).join(', ');
-  const lg=(B.length?`<span><i style="background:#e5484d"></i>no trucks${wt?' '+wt:''}</span>`:'')+(W.length?`<span><i style="background:#f5a524"></i>${W.some(w=>w.t==='snow')?'heavy snow':'frost'}${regs?': '+regs:''}</span>`:'');
+  /* owner 11.11.2026: road-sign icons; names: Truck ban, Heavy snow, Extreme cold */
+  const tmin=Math.min(...W.filter(w=>w.t==='cold'&&w.tmin!==null).map(w=>w.tmin));
+  const lg=(B.length?`<span>${SIGN.ban}Truck ban${wt?' '+wt:''}</span>`:'')+(W.some(w=>w.t==='snow')?`<span>${SIGN.snow}Heavy snow${regs?': '+regs:''}</span>`:'')+(W.some(w=>w.t==='cold')?`<span>${SIGN.cold}Extreme cold${isFinite(tmin)?' '+tmin+' °C':''}${regs&&!W.some(w=>w.t==='snow')?': '+regs:''}</span>`:'');
   return `<div class="rw"><div class="ds">${cells}</div><div class="lgd3">${lg}</div></div>`}
 function chip(s,k,main,sub,opts={}){
   const pt=(opts.lay||GEO.pts)[k]; const [ax,ay]=pt.a,[lx,ly]=pt.l;
