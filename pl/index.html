@@ -301,7 +301,7 @@ function bans(k){const B=AL&&AL.bans&&AL.bans[alK(k)];if(!B)return[];const I=[];
 function weather(k){const W=AL&&AL.weather&&AL.weather[alK(k)];if(!W)return[];const now=Date.now();return W.map(w=>({...w,f:Date.parse(w.from+':00Z'),e:Date.parse(w.to+':00Z')})).filter(w=>w.e>now).sort((a,b)=>a.f-b.f)}
 const toWall=ms=>Date.parse(new Date(ms).toLocaleString('sv-SE',{timeZone:'Europe/Warsaw'}).replace(' ','T')+'Z');
 /* 11.11.2026: signs at the top corners of the chips, size 26 (owner approved mockup Znaki_na_karte.png), top layer so they are never hidden; Heat view only (QA round 2) */
-function drawSigns(s){if(!AL)return;const S=26;MAP.forEach(k=>{const bd=badges(k);if(!bd.ban&&!bd.w)return;const pt=GEO.pts[k];const [lx,ly]=pt.l;const w=84,h=48;const g=el('g',{transform:`translate(${lx} ${ly})`,style:'pointer-events:none'},s);let bx=w/2+2;const cy=-h/2+1;
+function drawSigns(s){if(!AL)return;const S=26;MAP.forEach(k=>{const bd=badges(k);if(!bd.ban&&!bd.w)return;const pt=GEO.pts[k];const [lx,ly]=pt.l;const w=84,h=48;const g=el('g',{class:'sgn',transform:`translate(${lx} ${ly})`,style:'pointer-events:none'},s);let bx=w/2+2;const cy=-h/2+1;
   if(bd.ban){el('circle',{cx:bx,cy,r:S/2+1.5,style:'fill:#0d1822'},g);signNode(g,'ban',bx-S/2,cy-S/2,S);bx-=S+2}
   if(bd.w){el('path',{d:`M${bx} ${cy-S/2-2.5}L${bx+S/2+3} ${cy+S/2-0.5}H${bx-S/2-3}Z`,style:'fill:#0d1822'},g);signNode(g,bd.w.t,bx-S/2,cy-S/2,S)}})}
 function signNode(g,name,x,y,size){const d=new DOMParser().parseFromString(SIGN[name].replace('<svg ','<svg xmlns="http://www.w3.org/2000/svg" '),'image/svg+xml').documentElement;const n=document.importNode(d,true);n.setAttribute('x',x);n.setAttribute('y',y);n.setAttribute('width',size);n.setAttribute('height',size);g.appendChild(n);return n}
@@ -404,11 +404,14 @@ const HINT0={heat:'Tap a country for details. Swipe to switch views.',
 let Z=null; let suppressClick=false; let tapTimer=null;
 function tap(fn){clearTimeout(tapTimer);tapTimer=setTimeout(fn,330)}
 function applyZ(svg){if(!Z)Z={x:0,y:0,w:GEO.W,h:GEO.H};svg.setAttribute('viewBox',`${Z.x} ${Z.y} ${Z.w} ${Z.h}`);const zoomed=Z.w<GEO.W*0.98;svg.classList.toggle('zoomed',zoomed);document.getElementById('zfit').hidden=!zoomed;
-  const sc=Z.w/GEO.W; // keep labels the same size on screen while zooming
-  svg.querySelectorAll('.chip,.bchip').forEach(g=>{const b=g.dataset.t||(g.dataset.t=g.getAttribute('transform'));g.setAttribute('transform',sc<0.98?b+` scale(${sc})`:b)});
+  const sc=Z.w/GEO.W;
+  /* 11.11.2026 (owner): when zoomed in, price chips grow with the map (3 times bigger at the closest zoom 1:6: 6^0.613=3);
+     road signs are scaled together with their chip, so they stay at the chip corner and keep the same size ratio */
+  const cs=sc<0.98?Math.pow(sc,1-Math.log(3)/Math.log(6)):1;
+  svg.querySelectorAll('.chip,.bchip,.sgn').forEach(g=>{const b=g.dataset.t||(g.dataset.t=g.getAttribute('transform'));g.setAttribute('transform',sc<0.98?b+` scale(${cs})`:b)});
   svg.querySelectorAll('circle.dot').forEach(c=>{const r=c.dataset.r||(c.dataset.r=c.getAttribute('r'));c.setAttribute('r',r*sc)});
   svg.querySelectorAll('.lead').forEach(l=>l.style.strokeWidth=sc);
-  svg.querySelectorAll('text.lbl').forEach(x=>{const f=x.dataset.f||(x.dataset.f=x.getAttribute('font-size'));x.setAttribute('font-size',f*sc)})}
+  svg.querySelectorAll('text.lbl').forEach(x=>{const f=x.dataset.f||(x.dataset.f=x.getAttribute('font-size'));x.setAttribute('font-size',f*cs)})}
 function zoomAt(svg,px,py,f){const nw=Math.max(GEO.W/6,Math.min(GEO.W,Z.w/f));const k=nw/Z.w;Z.x=px-(px-Z.x)*k;Z.y=py-(py-Z.y)*k;Z.w=nw;Z.h=nw*GEO.H/GEO.W;clampZ();applyZ(svg)}
 function clampZ(){Z.x=Math.max(0,Math.min(GEO.W-Z.w,Z.x));Z.y=Math.max(0,Math.min(GEO.H-Z.h,Z.y))}
 function attachZoom(svg){svg.classList.add('zoomable');applyZ(svg);
