@@ -110,6 +110,7 @@ svg{display:block;width:100%;height:auto}
 @media (max-width:359px){.ovl,.tg{gap:4px}.ovl{left:6px;top:6px}.shown{right:6px;top:6px}.tg button,.shown{height:21px;font-size:10px;gap:5px;padding:0 7px 0 4px}.shown{padding:3px 7px;font-size:9.5px!important}.tg button i{width:22px;height:13px}.tg button i::after{width:9px;height:9px}.tg button[aria-pressed="true"] i::after{left:11px}.shown i{width:7px;height:7px}}
 .ovl{transform:scale(1.1);transform-origin:0 0}.shown{transform:scale(1.1);transform-origin:100% 0}
 @media (min-width:700px){.ovl{transform:scale(1.3)}.shown{transform:scale(1.3)}}
+.plt{display:grid;grid-template-columns:max-content max-content max-content;column-gap:14px;row-gap:2px;margin-top:2px;font-size:13px;color:var(--mute)}.plh{grid-column:1/-1;font-weight:600;color:var(--mute);font-size:12px;letter-spacing:.04em}.plr{display:contents}.plr b{font-weight:600;font-variant-numeric:tabular-nums;text-align:right}.plr.on span,.plr.on b{color:var(--ink)}.plr em{font-style:normal;font-size:11px;color:#5aa9e6}
 .det{margin-top:8px;background:var(--land);border:1px solid var(--edge);border-radius:12px;padding:10px 12px;display:grid;gap:6px;font-size:13px}
 .det .r1{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
 .det .nm{font:700 19px var(--display)}
@@ -365,8 +366,8 @@ function pick(k){
   const rk=rank().indexOf(k)+1; const dd=conv(k,r.after)-conv(k,r.after-r.dd);
   const cls=v=>v<-0.0049?'pos':v>0.0049?'neg':'zero';
   let h=`<div class="r1"><span class="nm">${FLAG[k]||''} ${r.name}${star(k)}</span><span class="pv">${f3(P(k))}</span><span class="mu">€/l · #${rk} · <span class="${cls(dd)}">${ct(dd)} ct</span> vs ${DATA.hdates[4]}</span><button class="x" aria-label="Close">×</button></div>
-  <div class="mu">${r.sup}${r.st?' · '+r.st:''}${r.ref?` · excise refund ${f3(r.ref)}`:''}${NOV(k)?' · VAT cannot be refunded, price includes VAT':''}</div>`;
-  if(k==='PL') h+=`<div class="mu">${DATA.pl.map(p=>`${p[0]} ${f3(vatSet.has('PL')?p[1]:p[1]*(1+(p[2]||0)))}`).join(' · ')}</div>`;
+  <div class="mu">${k==='PL'?'Orlen, spot price with discount':r.sup}${r.st?' · '+r.st:''}${r.ref?` · excise refund ${f3(r.ref)}`:''}${NOV(k)?' · VAT is not refunded, price includes VAT':''}</div>`;
+  if(k==='PL') h+=`<div class="plt"><div class="plh">Orlen spot tariffs, €/l</div>${DATA.pl.map((p,i)=>`<div class="plr${i===0?' on':''}"><span>${p[0].replace('Spot Orlen','Spot').replace(/(\d)\.(\d)/g,'$1,$2').replace(/^Spot$/,'Spot, no discount')}</span><b>${f3(vatSet.has('PL')?p[1]:p[1]*(1+(p[2]||0)))}</b><em>${i===0?'on the map':''}</em></div>`).join('')}</div>`;
   if(!NOV(k)){const cell=(v,x)=>{const on=vatSet.has(k)===v&&excOn===x;return `<span class="pc${on?' on':''}"><i>${v?'Net':'Gross'}${r.ref?(x?', after refund':', before refund'):''}</i><b>${f3(price(k,r.after,v,x))}</b></span>`};
     h+=`<div class="pg">${cell(true,true)}${r.ref?cell(true,false):''}${cell(false,true)}${r.ref?cell(false,false):''}</div>`;
     h+=`<label class="vt"><input type="checkbox" id="vtk" ${vatSet.has(k)?'checked':''}> VAT is refunded in ${r.name} (price without VAT)</label>`}
