@@ -103,7 +103,7 @@ svg{display:block;width:100%;height:auto}
 .tg button[aria-pressed="true"] i{background:var(--good)}
 .tg button[aria-pressed="true"] i::after{left:14px}
 .tg button:focus-visible{outline:2px solid var(--ref);outline-offset:1px}
-.basis{margin:0;font:600 clamp(11px,2.9vw,16px)/1.25 var(--body);color:var(--ink);background:#22384ae0;border:1px solid #3d5568;border-radius:10px;padding:5px 7px}
+.basis{white-space:pre;width:max-content;max-width:62vw;overflow:hidden;text-overflow:ellipsis;margin:0;font:600 clamp(11px,2.9vw,16px)/1.25 var(--body);color:var(--ink);background:#22384ae0;border:1px solid #3d5568;border-radius:10px;padding:5px 7px}
 .det{margin-top:8px;background:var(--land);border:1px solid var(--edge);border-radius:12px;padding:10px 12px;display:grid;gap:6px;font-size:13px}
 .det .r1{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
 .det .nm{font:700 19px var(--display)}
@@ -277,7 +277,7 @@ function extra(){
   document.getElementById('xtra').innerHTML=h;
   document.getElementById('vatline').textContent=vatAll()?'* UA, MD, TR, GE, AZ, KZ: VAT is not refunded':vatSet.size===0?'Prices include VAT.':'Prices include VAT, except countries where you marked VAT as refunded: '+[...vatSet].map(lab).join(', ')+'. Tap a country to change.';
 }
-function basisText(){return 'Shown: '+(vatAll()?'net price (without VAT)':vatSet.size===0?'gross price (with VAT)':'price without VAT in '+vatSet.size+(vatSet.size===1?' country':' countries')+', with VAT elsewhere')+', '+(excOn?'after excise refund':'before excise refund')+'.'}
+function basisText(){return (vatAll()?'net price (without VAT)':vatSet.size===0?'gross price (with VAT)':'without VAT in '+vatSet.size+(vatSet.size===1?' country':' countries')+'\nwith VAT elsewhere')+'\n'+(excOn?'after excise refund':'before excise refund')}
 const views={
  heat(){const s=svgBase(); paint(s,k=>heat(P(k)));
    MAP.forEach(k=>chip(s,k,f3(P(k)))); return s},
