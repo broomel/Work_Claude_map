@@ -365,9 +365,9 @@ function pick(k){
   const nb=(NEI[k]||[]).map(n=>({n,d:P(n)-P(k)})).sort((a,b)=>a.d-b.d);
   const rk=rank().indexOf(k)+1; const dd=conv(k,r.after)-conv(k,r.after-r.dd);
   const cls=v=>v<-0.0049?'pos':v>0.0049?'neg':'zero';
-  let h=`<div class="r1"><span class="nm">${FLAG[k]||''} ${r.name}${star(k)}</span><span class="pv">${f3(P(k))}</span><span class="mu">€/l · #${rk} · <span class="${cls(dd)}">${ct(dd)} ct</span> vs ${DATA.hdates[4]}</span><button class="x" aria-label="Close">×</button></div>
-  <div class="mu">${k==='PL'?'Orlen, spot price with discount':r.sup}${r.st?' · '+r.st:''}${r.ref?` · excise refund ${f3(r.ref)}`:''}${NOV(k)?' · VAT is not refunded, price includes VAT':''}</div>`;
-  if(k==='PL') h+=`<div class="plt"><div class="plh">Orlen spot tariffs, €/l</div>${DATA.pl.map((p,i)=>`<div class="plr${i===0?' on':''}"><span>${p[0].replace('Spot Orlen','Spot').replace(/(\d)\.(\d)/g,'$1,$2').replace(/^Spot$/,'Spot, no discount')}</span><b>${f3(vatSet.has('PL')?p[1]:p[1]*(1+(p[2]||0)))}</b><em>${i===0?'on the map':''}</em></div>`).join('')}</div>`;
+  let h=`<div class="r1"><span class="nm">${FLAG[k]||''} ${r.name}${star(k)}</span><span class="pv">${f3(P(k))}</span><span class="mu">€/l</span><button class="x" aria-label="Close">×</button></div>
+  ${k==='PL'?'':`<div class="mu">${r.sup}${r.st?' · '+r.st:''}${r.ref?` · excise refund ${f3(r.ref)}`:''}${NOV(k)?' · VAT is not refunded, price includes VAT':''}</div>`}`;
+  if(k==='PL') h+=`<div class="plt">${DATA.pl.map((p,i)=>`<div class="plr${i===0?' on':''}"><span>${p[0].replace('Spot Orlen','Spot').replace(/(\d)\.(\d)/g,'$1,$2').replace(/^Spot$/,'Spot, no discount')}</span><b>${f3(vatSet.has('PL')?p[1]:p[1]*(1+(p[2]||0)))}</b><em>${i===0?'on the map':''}</em></div>`).join('')}</div>`;
   if(!NOV(k)){const cell=(v,x)=>{const on=vatSet.has(k)===v&&excOn===x;return `<span class="pc${on?' on':''}"><i>${v?'Net':'Gross'}${r.ref?(x?', after refund':', before refund'):''}</i><b>${f3(price(k,r.after,v,x))}</b></span>`};
     h+=`<div class="pg">${cell(true,true)}${r.ref?cell(true,false):''}${cell(false,true)}${r.ref?cell(false,false):''}</div>`;
     h+=`<label class="vt"><input type="checkbox" id="vtk" ${vatSet.has(k)?'checked':''}> VAT is refunded in ${r.name} (price without VAT)</label>`}
