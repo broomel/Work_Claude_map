@@ -122,12 +122,14 @@ svg{display:block;width:100%;height:auto}
 .pg{display:grid;grid-template-columns:repeat(2,1fr);gap:4px}
 .esA{display:grid;grid-template-columns:1fr 1fr;gap:6px}.esA>div{background:#16313a;box-shadow:inset 0 0 0 1px #2f6f7c;border-radius:8px;padding:6px 9px}.esA h4{margin:0 0 3px;font:600 11px var(--body);color:#7fd3e0;letter-spacing:.06em;text-transform:uppercase}.esA p{margin:0;display:flex;justify-content:space-between;gap:8px;font-size:14px;font-variant-numeric:tabular-nums}.esA p span{color:var(--mute)}.esA p b{font-weight:600}
 .esA h4{white-space:nowrap}@media (max-width:359px){.esA h4{letter-spacing:0;font-size:10px}.esA>div{padding:6px 7px}}
-.alr{display:grid;gap:4px;font-size:13px}.alr div{display:grid;grid-template-columns:18px auto;column-gap:7px;align-items:start}.alr b{font-weight:600;color:var(--ink)}.alr span{grid-column:2;color:var(--mute);font-variant-numeric:tabular-nums}
+.alr{display:grid;gap:4px;font-size:13px;border-top:1px solid #2b3742;padding-top:8px;margin-top:2px}.alr div{display:grid;grid-template-columns:18px auto;column-gap:7px;align-items:start}.alr b{font-weight:600;color:var(--ink)}.alr span{grid-column:2;color:var(--mute);font-variant-numeric:tabular-nums}
 .alr .ib,.lgx .ib{width:14px;height:14px;border-radius:50%;background:#e5484d;position:relative;margin-top:2px;display:inline-block}.alr .ib::after,.lgx .ib::after{content:"";position:absolute;left:3px;right:3px;top:6px;height:2px;background:#fff}
 .alr .iw,.lgx .iw{width:14px;height:14px;border-radius:50%;margin-top:2px;display:inline-grid;place-items:center;font-size:10px;line-height:1;color:#fff;background:#f08c00}.alr .iw.red{background:#e5484d}
 .lgx .sgx svg{width:17px;height:17px;display:block}.lgx .sgx{display:inline-block}
 .lgx{display:flex;flex-wrap:wrap;gap:4px 14px;justify-content:center;font-size:12px;color:var(--mute);margin:6px 0 0}.lgx span{display:inline-flex;gap:6px;align-items:center}.lgx .ib,.lgx .iw{margin-top:0}
-.rw{margin-top:10px;border-top:1px solid #2b3742;padding-top:10px;display:grid;gap:14px}
+.ds{display:grid;grid-template-columns:repeat(10,1fr);gap:3px;text-align:center;font-size:11px}.ds div{border-radius:6px;padding:4px 0 3px;background:#16202a;color:var(--mute);line-height:1.25}.ds div b{display:block;font-size:12.5px;color:var(--ink);font-weight:600}.ds .ban{background:#5a1a1d;color:#ffd7d8}.ds .wx{background:#5a3d0a;color:#ffe2a8}.ds .wx.red{background:#6b1f22}.ds .both{background:linear-gradient(135deg,#5a1a1d 50%,#5a3d0a 50%);color:#fff}.ds .past{opacity:.35}.ds i{display:block;font-style:normal;font-size:10px;height:12px;letter-spacing:-.02em}
+.lgd3{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12px;color:var(--mute);margin-top:0}.lgd3 i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.rw{margin-top:10px;border-top:1px solid #2b3742;padding-top:10px;display:grid;gap:6px}
 .rw h5{margin:0;font:600 11px var(--body);letter-spacing:.08em;text-transform:uppercase;color:var(--mute)}
 .rwi{display:grid;grid-template-columns:44px 1fr;column-gap:12px;align-items:start}
 .rwi .sg{display:flex;flex-direction:column;align-items:center;gap:3px}.rwi .sg svg{width:38px;height:38px;display:block}
@@ -292,11 +294,17 @@ function tmRow(a,b){const d=t=>dtx(t,false),h=t=>{const x=dtx(t).slice(-5);retur
   const hb=h(b)==='00:00'&&sameDay?'24:00':h(b);
   return `<span class="d">${d(a)}</span><span>${h(a)}</span><span class="ar">→</span>${sameDay?`<span style="grid-column:4/span 2">${hb}</span>`:`<span class="d">${d(b)}</span><span>${hb}</span>`}`}
 function alertHtml(k){const B=bans(k),W=weather(k);if(!B.length&&!W.length)return '';
-  let h='<div class="rw"><h5>On the road, next 10 days</h5>';
-  if(B.length){const wt=WT[alK(k)];h+=`<div class="rwi"><div class="sg">${SIGN.ban}${wt?`<span class="pl">${wt}</span>`:''}</div><div class="bd"><div class="tt">Truck driving ban</div><div class="tm">${B.slice(0,5).map(i=>tmRow(i[0],i[1])).join('')}</div></div></div>`}
-  for(const w of W.slice(0,3)){const ttl=w.t==='snow'?'Heavy snow or ice':'Severe frost'+(w.tmin!==null?', down to '+w.tmin+' °C':'');
-    h+=`<div class="rwi"><div class="sg">${SIGN[w.t]}</div><div class="bd"><div class="tt">${ttl}<span class="lv" style="background:${LVC[w.lvl]}">${w.lvl} warning</span></div><div class="tm">${tmRow(toWall(w.f),toWall(w.e))}</div>${w.area?`<div class="ra">${w.area}</div>`:''}</div></div>`}
-  return h+'</div>'}
+  /* 11.11.2026 (owner, variant 3): 10-day calendar - red cell = truck ban with hours, amber cell = snow/frost warning; one short legend line */
+  const st=Date.parse(AL.start+'T00:00:00Z'),D=864e5,now=wallNow(),pad=n=>String(n).padStart(2,'0');
+  const reg=w=>{const m=(w.area||'').match(/([A-ZÄÖÅÜÉ][\p{L}-]+)\s*$/u);return m?m[1]:''};
+  let cells='';
+  for(let i=0;i<10;i++){const a=st+i*D,e=a+D;const bb=B.filter(x=>x[0]<e&&x[1]>a);const ww=W.filter(w=>toWall(w.f)<e&&toWall(w.e)>a);
+    let t='';if(bb.length){const s0=Math.max(bb[0][0],a),e0=Math.min(bb[bb.length-1][1],e);t=pad(new Date(s0).getUTCHours())+'-'+(e0===e?'24':pad(new Date(e0).getUTCHours()))}else if(ww.length)t='❄';
+    const cl=(bb.length&&ww.length?'both':bb.length?'ban':ww.length?('wx'+(ww.some(w=>w.lvl==='red')?' red':'')):'')+(e<=now?' past':'');
+    const d=new Date(a);cells+=`<div class="${cl}">${d.toLocaleDateString('en-GB',{weekday:'short',timeZone:'UTC'}).slice(0,2)}<b>${d.getUTCDate()}</b><i>${t}</i></div>`}
+  const wt=WT[alK(k)];const regs=[...new Set(W.map(reg).filter(Boolean))].slice(0,2).join(', ');
+  const lg=(B.length?`<span><i style="background:#e5484d"></i>no trucks${wt?' '+wt:''}</span>`:'')+(W.length?`<span><i style="background:#f5a524"></i>${W.some(w=>w.t==='snow')?'heavy snow':'frost'}${regs?': '+regs:''}</span>`:'');
+  return `<div class="rw"><div class="ds">${cells}</div><div class="lgd3">${lg}</div></div>`}
 function chip(s,k,main,sub,opts={}){
   const pt=(opts.lay||GEO.pts)[k]; const [ax,ay]=pt.a,[lx,ly]=pt.l;
   if(pt.callout){el('path',{d:`M${lx} ${ly}L${ax} ${ay}`,class:'lead'},s);el('circle',{cx:ax,cy:ay,r:3.2,class:'dot'},s)}
@@ -438,7 +446,7 @@ function pick(k){
     }
   /* 11.11.2026: neighbour line removed from the card (owner: duplicates the map) */
   h+=spark(r.hist.map(v=>conv(k,v)));
-  h+=alertHtml(k);
+  h+=alertHtml(k);  /* 11.11.2026 (owner): bans and weather under the prices and under the chart */
   showDet(h);
 }
 document.getElementById('mode').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.t==='vat'){vatSet=vatSet.size>0?new Set():new Set(EU)}else excOn=!excOn;saveSet();const open=!document.getElementById('detail').hidden;render();if(sel&&open)pick(sel)});
