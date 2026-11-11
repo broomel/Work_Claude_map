@@ -154,7 +154,7 @@ svg{display:block;width:100%;height:auto}
 <p class="hint" id="hint"></p>
 <div id="stagew"><div id="stage"></div>
   <div class="ovl"><div class="tg" id="mode" role="group" aria-label="Price basis">
-    <button id="t-vat" data-t="vat" aria-pressed="true"><i></i><span>No VAT</span></button>
+    <button id="t-vat" data-t="vat" aria-pressed="true"><i></i><span>Excluding VAT</span></button>
     <button id="t-exc" data-t="exc" aria-pressed="true"><i></i><span>Excise refunded</span></button>
   </div></div><p class="shown" id="basis"><i></i><span></span></p><button id="zfit" class="zbtn" hidden>Fit map</button></div>
 <div class="det" id="detail" hidden></div>
@@ -341,14 +341,14 @@ function pickPair(exp,cheap){sel=null;render();const d=P(exp)-P(cheap);
   <div class="mu">${R[cheap].name} ${f3(P(cheap))} · ${R[cheap].sup}${R[cheap].st?' · '+R[cheap].st:''}</div>`)}
 function render(){
   setScale(); const stage=document.getElementById('stage'); const node=views[view](); stage.replaceChildren(node); if(node.tagName==='svg') attachZoom(node); else document.getElementById('zfit').hidden=true;
-  document.getElementById('hint').textContent=HINT[view];document.getElementById('basis').lastChild.textContent='Shown: '+basisText();document.querySelector('#basis i').style.cssText=shownDot();
+  document.getElementById('hint').textContent=HINT[view];document.getElementById('basis').lastChild.textContent='Prices: '+basisText();document.querySelector('#basis i').style.cssText=shownDot();
   const gp=document.getElementById('gaps');
   const bl=document.getElementById('blist');bl.hidden=view!=='borders';
   if(view==='borders'){const rows=Object.keys(GEO.borders).map(p=>{const [a,b]=p.split('-');const d=P(a)-P(b);return {from:d>0?a:b,to:d>0?b:a,c:Math.abs(d)}}).filter(o=>{const bk=bucket(o.c);return bk&&GAPS[bk.k]}).sort((x,y)=>y.c-x.c);
     document.getElementById('blrows').innerHTML=rows.map(o=>`<button data-f="${o.from}" data-t="${o.to}" class="${o.from===borderK||o.to===borderK?'on':''}"><span>${lab(o.from)+star(o.from)} → ${lab(o.to)+star(o.to)}${isFerry(o.from,o.to)?' <em>ferry</em>':''}</span><b style="color:${bucket(o.c).col}">${Math.round(o.c*100)} ct</b></button>`).join('')}
   gp.innerHTML=BUCKETS.map(b=>`<button data-g="${b.k}" aria-pressed="${GAPS[b.k]}" style="${GAPS[b.k]?'border-color:'+b.col:''}"><i style="${GAPS[b.k]?'background:'+b.col:''}"></i>${b.txt}</button>`).join('');
   document.querySelectorAll('#tabs button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===view));
-  document.getElementById('t-vat').setAttribute('aria-pressed',vatSet.size>0);document.getElementById('t-vat').lastChild.textContent=vatAll()||vatSet.size===0?'No VAT':'No VAT: '+vatSet.size;document.getElementById('t-exc').setAttribute('aria-pressed',excOn);extra();
+  document.getElementById('t-vat').setAttribute('aria-pressed',vatSet.size>0);document.getElementById('t-vat').lastChild.textContent=vatAll()||vatSet.size===0?'Excluding VAT':'Excluding VAT: '+vatSet.size;document.getElementById('t-exc').setAttribute('aria-pressed',excOn);extra();
 }
 function spark(h){const w=260,hh=46,mn=Math.min(...h),mx=Math.max(...h),sp=(mx-mn)||0.01;const x=i=>10+i*(w-20)/(h.length-1),y=v=>hh-12-(v-mn)/sp*(hh-28);
   const pts=h.map((v,i)=>x(i)+','+y(v)).join(' ');
@@ -389,7 +389,7 @@ document.getElementById('blist').addEventListener('click',e=>{const b=e.target.c
 document.getElementById('gaps').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const k=b.dataset.g;GAPS[k]=!GAPS[k];if(!Object.values(GAPS).some(Boolean))GAPS[k]=true;render()});
 window.addEventListener('hashchange',()=>{const v=location.hash.slice(1);if(views[v]){view=v;render()}});
 (()=>{const [d,m,y]=DATA.date.split('.').map(Number);const dt=new Date(Date.UTC(y,m-1,d));document.getElementById('dt').textContent=d+' '+dt.toLocaleDateString('en-GB',{month:'long',timeZone:'UTC'});document.getElementById('wd').textContent=dt.toLocaleDateString('en-GB',{weekday:'long',timeZone:'UTC'})})();
-document.getElementById('foot').textContent=`€/l, best price per country (VAT added at each country's rate when 'No VAT' is off). Source: WP ${DATA.date} ${DATA.time}. Germany: North / Central / South price zones, borders on the map are approximate. Poland: cheapest tariff (Spot Orlen -0,35 PLN). Grey: country not in the ranking.`;
+document.getElementById('foot').textContent=`€/l, best price per country (VAT added at each country's rate when 'Excluding VAT' is off). Source: WP ${DATA.date} ${DATA.time}. Germany: North / Central / South price zones, borders on the map are approximate. Poland: cheapest tariff (Spot Orlen -0,35 PLN). Grey: country not in the ranking.`;
 const hv=location.hash.slice(1); view=views[hv]?hv:(views[st.get('view')]&&st.get('view')!=='tiles'?st.get('view'):'heat'); refK=R[st.get('ref')]&&MAP.includes(st.get('ref'))?st.get('ref'):'DEC'; borderK=R[st.get('bk')]&&MAP.includes(st.get('bk'))?st.get('bk'):'DEC';
 render();
 </script>
