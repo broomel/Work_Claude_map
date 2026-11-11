@@ -355,9 +355,9 @@ function render(){
   document.querySelectorAll('#tabs button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===view));
   document.getElementById('t-vat').setAttribute('aria-pressed',vatSet.size>0);document.getElementById('t-vat').lastChild.textContent=vatAll()||vatSet.size===0?'Excluding VAT':'Excluding VAT: '+vatSet.size;document.getElementById('t-exc').setAttribute('aria-pressed',excOn);extra();
 }
-function spark(h){const w=260,hh=46,mn=Math.min(...h),mx=Math.max(...h),sp=(mx-mn)||0.01;const x=i=>10+i*(w-20)/(h.length-1),y=v=>hh-12-(v-mn)/sp*(hh-28);
+function spark(h){const w=260,hh=56,mn=Math.min(...h),mx=Math.max(...h),sp=(mx-mn)||0.01;const x=i=>14+i*(w-28)/(h.length-1),y=v=>hh-14-(v-mn)/sp*(hh-36);
   const pts=h.map((v,i)=>x(i)+','+y(v)).join(' ');
-  return `<svg viewBox="0 0 ${w} ${hh}" style="max-width:260px;display:block"><polyline points="${pts}" fill="none" stroke="#5aa9e6" stroke-width="2.5"/>${h.map((v,i)=>`<circle cx="${x(i)}" cy="${y(v)}" r="${i===h.length-1?4.5:2.5}" fill="${i===h.length-1?'#eaf0f4':'#5aa9e6'}"/>`).join('')}<text x="10" y="${hh-1}" fill="#8b9cab" font-size="11">${DATA.hdates[0]}</text><text x="${w-10}" y="${hh-1}" fill="#8b9cab" font-size="11" text-anchor="end">${DATA.hdates[h.length-1]}</text><text x="${w-10}" y="12" fill="#8b9cab" font-size="11" text-anchor="end">${f3(mx)} / ${f3(mn)}</text></svg>`}
+  return `<svg viewBox="0 0 ${w} ${hh}" style="max-width:260px;display:block"><polyline points="${pts}" fill="none" stroke="#5aa9e6" stroke-width="2.5"/>${h.map((v,i)=>`<circle cx="${x(i)}" cy="${y(v)}" r="${i===h.length-1?4.5:2.5}" fill="${i===h.length-1?'#eaf0f4':'#5aa9e6'}"/>`).join('')}<text x="${x(0)-4}" y="${hh-1}" fill="#8b9cab" font-size="11">${DATA.hdates[0]}</text><text x="${x(h.length-1)+4}" y="${hh-1}" fill="#8b9cab" font-size="11" text-anchor="end">${DATA.hdates[h.length-1]}</text><text x="${x(0)-4}" y="${y(h[0])-8}" fill="#c9d3dc" font-size="11" font-weight="600">${f3(h[0])}</text><text x="${x(h.length-1)+4}" y="${y(h[h.length-1])-9}" fill="#eaf0f4" font-size="11" font-weight="600" text-anchor="end">${f3(h[h.length-1])}</text></svg>`}
 function pick(k){
   if(view==='compare'){refK=k;st.set('ref',k)}
   if(view==='borders'){borderK=k;st.set('bk',k)}
