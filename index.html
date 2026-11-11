@@ -128,7 +128,7 @@ svg{display:block;width:100%;height:auto}
 .bnote{margin:0 0 6px;font-size:12px;color:var(--mute)}
 .bl button b{font:700 16px var(--display)}
 .xtra{display:grid;grid-template-columns:1fr 1fr;gap:14px 18px;margin-top:14px;font-size:13px;color:#b7c4cf;line-height:1.55}
-.xtra h3{margin:0 0 4px;font:700 12px var(--body);letter-spacing:.08em;text-transform:uppercase;color:#eaf0f4}
+.xtra h3{margin:0 0 4px;font:700 12px var(--body);letter-spacing:.08em;text-transform:uppercase;color:#eaf0f4}.xtra h3 .u{text-transform:none;letter-spacing:0}
 .xtra .row{display:flex;justify-content:space-between;gap:8px;font-variant-numeric:tabular-nums}
 .xtra .row b{font-weight:600;color:#eaf0f4}
 .lgd2{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:8px;margin:8px 0 4px;font:600 12px var(--body);color:#b7c4cf;font-variant-numeric:tabular-nums}
@@ -161,7 +161,7 @@ svg{display:block;width:100%;height:auto}
 <p class="vatline" id="vatline"></p>
 <div class="xtra" id="xtra"></div>
 <p class="foot" id="foot"></p>
-<p class="foot">Tip: in the browser tap Share, then Add to Home Screen, to open the map like an app. The link stays the same, prices update every working day.</p>
+<p class="foot">Tip: open the map like an app. iPhone: tap Share, then Add to Home Screen. Android: tap the menu ⋮, then Add to Home screen. The link stays the same, prices update every working day.</p>
 </div>
 
 <script>
@@ -269,22 +269,22 @@ function extra(){
   const mv=MAP.slice().sort((a,b)=>dd(a)-dd(b)); const down=mv.slice(0,3), up=mv.filter(k=>dd(k)>0.0005).slice(-2).reverse();
   const gaps=Object.keys(GEO.borders).filter(p=>!p.split('-').some(x=>NOV(x))).map(p=>{const [x,y]=p.split('-');const d=P(x)-P(y);return {from:d>0?x:y,to:d>0?y:x,c:Math.abs(d)}}).sort((a,b)=>b.c-a.c).slice(0,4);
   const nm=k=>R[k].name;
-  let h=`<div><h3>Cheapest today, €/l</h3>${top.map(k=>row(nm(k)+star(k),f3(P(k)))).join('')}</div>`;
+  let h=`<div><h3>Cheapest today, <span class="u">€/l</span></h3>${top.map(k=>row(nm(k)+star(k),f3(P(k)))).join('')}</div>`;
   h+=`<div><h3>Biggest border gaps</h3>${gaps.map(g=>row(lab(g.from)+' → '+lab(g.to),Math.round(g.c*100)+' ct')).join('')}</div>`;
-  h+=`<div><h3>Excise refund, €/l</h3>${['IT','BE','FR','ES'].map(k=>row(nm(k),f3(R[k].ref))).join('')}</div>`;
-  h+=`<div><h3>Not on the map, €/l</h3>${SIDE.map(k=>row(R[k].name+star(k),f3(P(k)))).join('')}</div>`;
+  h+=`<div><h3>Excise refund, <span class="u">€/l</span></h3>${['IT','BE','FR','ES'].map(k=>row(nm(k),f3(R[k].ref))).join('')}</div>`;
+  h+=`<div><h3>Not on the map, <span class="u">€/l</span></h3>${SIDE.map(k=>row(R[k].name+star(k),f3(P(k)))).join('')}</div>`;
   const lg=document.getElementById('lgd2');lg.hidden=view!=='heat';lg.innerHTML=`<span>${f3(LO)}</span><i style="background:linear-gradient(90deg,${C.good},${C.mid},${C.bad})"></i><span>${f3(HI)}</span>`;
   document.getElementById('xtra').innerHTML=h;
-  document.getElementById('vatline').textContent=vatAll()?'Prices exclude VAT. * UA, MD, TR, GE, AZ, KZ: VAT cannot be refunded, price includes VAT.':vatSet.size===0?'Prices include VAT.':'Prices include VAT, except countries where you marked VAT as refunded: '+[...vatSet].map(lab).join(', ')+'. Tap a country to change.';
+  document.getElementById('vatline').textContent=vatAll()?'* UA, MD, TR, GE, AZ, KZ: VAT is not refunded':vatSet.size===0?'Prices include VAT.':'Prices include VAT, except countries where you marked VAT as refunded: '+[...vatSet].map(lab).join(', ')+'. Tap a country to change.';
 }
-function basisText(){return 'Shown: '+(vatAll()?'netto price':vatSet.size===0?'brutto price (with VAT)':'price without VAT in '+vatSet.size+(vatSet.size===1?' country':' countries')+', with VAT elsewhere')+', '+(excOn?'after excise refund':'before excise refund')+'.'}
+function basisText(){return 'Shown: '+(vatAll()?'net price (without VAT)':vatSet.size===0?'gross price (with VAT)':'price without VAT in '+vatSet.size+(vatSet.size===1?' country':' countries')+', with VAT elsewhere')+', '+(excOn?'after excise refund':'before excise refund')+'.'}
 const views={
  heat(){const s=svgBase(); paint(s,k=>heat(P(k)));
    MAP.forEach(k=>chip(s,k,f3(P(k)))); return s},
  borders(){const s=svgBase(); const base=borderK; paint(s,k=>heat(P(k)));
    s.querySelectorAll('path.c[data-k]').forEach(p=>p.setAttribute('fill-opacity','.45'));
    const pairs=Object.keys(GEO.borders).filter(p=>p.split('-').includes(base));
-   MAP.forEach(k=>{if(k===base||pairs.some(p=>p.split('-').includes(k)))return;const [x,y]=GEO.anch[k];el('text',{x,y:y+7,'text-anchor':'middle',fill:'#eaf0f4','font-family':'Barlow Condensed','font-weight':700,'font-size':22,class:'lbl',opacity:.55,style:'pointer-events:none'},s,lab(k))});
+   MAP.forEach(k=>{if(k===base||pairs.some(p=>p.split('-').includes(k)))return;const [x,y]=GEO.anch[k];el('text',{x,y:y+7,'text-anchor':'middle',fill:'#eaf0f4','font-family':'Barlow Condensed','font-weight':700,'font-size':22,class:'lbl',opacity:.55,style:'pointer-events:none'},s,lab(k)+star(k))});
    const Q=pairs.map(p=>{const n=p.split('-').find(x=>x!==base);const [bx,by]=GEO.borders[p];const [nx,ny]=GEO.anch[n];const x=bx+(nx-bx)*.55,y=by+(ny-by)*.55;return {n,p,x,y,tx:x,ty:y}});
    const [cx,cy]=GEO.anch[base];Q.push({n:base,x:cx,y:cy,tx:cx,ty:cy,base:1});
    for(let it=0;it<200;it++){for(let a=0;a<Q.length;a++)for(let b=a+1;b<Q.length;b++){const u=Q[a],v=Q[b];const ox=96-Math.abs(u.x-v.x),oy=58-Math.abs(u.y-v.y);if(ox>0&&oy>0){if(ox<oy){const d=(u.x<v.x?-1:1)*ox/2;u.x+=d;v.x-=d}else{const d=(u.y<v.y?-1:1)*oy/2;u.y+=d;v.y-=d}}}Q.forEach(q=>{q.x+=(q.tx-q.x)*.05;q.y+=(q.ty-q.y)*.05})}
@@ -295,7 +295,7 @@ const views={
    s.querySelectorAll('.chip').forEach(g=>{const r=g.querySelector('rect');if(!r.getAttribute('style').includes('#0d1822d0'))g.querySelector('.code').style.fill='#06121c'});
    return s},
  compare(){const s=svgBase(); const ref=P(refK); paint(s,k=>k===refK?C.ref:rel(P(k)-ref));
-   MAP.forEach(k=>{ if(k===refK) chip(s,k,f3(P(k)),null,{bg:'#5aa9e6',fg:'#06121c',code:'BASE '+lab(k)}); else {const d=P(k)-ref; chip(s,k,ct(d),null,{fg:Math.abs(d)<0.0095?'#eaf0f4':d<0?C.good:C.bad,code:lab(k)+' '+f3(P(k))})}});
+   MAP.forEach(k=>{ if(k===refK) chip(s,k,f3(P(k)),null,{bg:'#5aa9e6',fg:'#06121c',code:lab(k)+star(k)}); else {const d=P(k)-ref; chip(s,k,ct(d),null,{fg:Math.abs(d)<0.0095?'#eaf0f4':d<0?C.good:C.bad,code:lab(k)+star(k)+' '+f3(P(k))})}});
    return s},
 };
 const HINT={heat:'Where diesel is cheaper today. Green: cheap, red: expensive. Tap a country to see its details below the map. Swipe left or right anywhere on the page to switch views.',
@@ -360,7 +360,7 @@ function pick(k){
   let h=`<div class="r1"><span class="nm">${FLAG[k]||''} ${r.name}${star(k)}</span><span class="pv">${f3(P(k))}</span><span class="mu">€/l · #${rk} · <span class="${cls(dd)}">${ct(dd)} ct</span> vs ${DATA.hdates[4]}</span><button class="x" aria-label="Close">×</button></div>
   <div class="mu">${r.sup}${r.st?' · '+r.st:''}${r.ref?` · excise refund ${f3(r.ref)}`:''}${NOV(k)?' · VAT cannot be refunded, price includes VAT':''}</div>`;
   if(k==='PL') h+=`<div class="mu">${DATA.pl.map(p=>`${p[0]} ${f3(vatSet.has('PL')?p[1]:p[1]*(1+(p[2]||0)))}`).join(' · ')}</div>`;
-  if(!NOV(k)){const cell=(v,x)=>{const on=vatSet.has(k)===v&&excOn===x;return `<span class="pc${on?' on':''}"><i>${v?'Netto':'Brutto'}${r.ref?(x?' after':' before'):''}</i><b>${f3(price(k,r.after,v,x))}</b></span>`};
+  if(!NOV(k)){const cell=(v,x)=>{const on=vatSet.has(k)===v&&excOn===x;return `<span class="pc${on?' on':''}"><i>${v?'Net':'Gross'}${r.ref?(x?', after refund':', before refund'):''}</i><b>${f3(price(k,r.after,v,x))}</b></span>`};
     h+=`<div class="pg">${cell(true,true)}${r.ref?cell(true,false):''}${cell(false,true)}${r.ref?cell(false,false):''}</div>`;
     h+=`<label class="vt"><input type="checkbox" id="vtk" ${vatSet.has(k)?'checked':''}> VAT is refunded in ${r.name} (price without VAT)</label>`}
   if(nb.length) h+=`<div class="nb2">${nb.map(o=>`<span>${lab(o.n)} <b class="${cls(o.d)}">${ct(o.d)}</b></span>`).join('')}<span class="mu">ct/l vs neighbours</span></div>`;
@@ -386,7 +386,7 @@ document.getElementById('blist').addEventListener('click',e=>{const b=e.target.c
 document.getElementById('gaps').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const k=b.dataset.g;GAPS[k]=!GAPS[k];if(!Object.values(GAPS).some(Boolean))GAPS[k]=true;render()});
 window.addEventListener('hashchange',()=>{const v=location.hash.slice(1);if(views[v]){view=v;render()}});
 (()=>{const [d,m,y]=DATA.date.split('.').map(Number);const dt=new Date(Date.UTC(y,m-1,d));document.getElementById('dt').textContent=d+' '+dt.toLocaleDateString('en-GB',{month:'long',timeZone:'UTC'});document.getElementById('wd').textContent=dt.toLocaleDateString('en-GB',{weekday:'long',timeZone:'UTC'})})();
-document.getElementById('foot').textContent=`EUR/l, best price per country (VAT added at each country's rate when 'Without VAT' is off), Daily Best WP3.0, ${DATA.date} ${DATA.time}. Germany: North / Central / South price zones, borders on the map are approximate. Poland: cheapest tariff (Spot Orlen -0,35 PLN). Grey: country not in the ranking.`;
+document.getElementById('foot').textContent=`€/l, best price per country (VAT added at each country's rate when 'Without VAT' is off). Source: WP ${DATA.date} ${DATA.time}. Germany: North / Central / South price zones, borders on the map are approximate. Poland: cheapest tariff (Spot Orlen -0,35 PLN). Grey: country not in the ranking.`;
 const hv=location.hash.slice(1); view=views[hv]?hv:(views[st.get('view')]&&st.get('view')!=='tiles'?st.get('view'):'heat'); refK=R[st.get('ref')]&&MAP.includes(st.get('ref'))?st.get('ref'):'DEC'; borderK=R[st.get('bk')]&&MAP.includes(st.get('bk'))?st.get('bk'):'DEC';
 render();
 </script>
