@@ -301,7 +301,7 @@ function bans(k){const B=AL&&AL.bans&&AL.bans[alK(k)];if(!B)return[];const I=[];
 function weather(k){const W=AL&&AL.weather&&AL.weather[alK(k)];if(!W)return[];const now=Date.now();return W.map(w=>({...w,f:Date.parse(w.from+':00Z'),e:Date.parse(w.to+':00Z')})).filter(w=>w.e>now).sort((a,b)=>a.f-b.f)}
 const toWall=ms=>Date.parse(new Date(ms).toLocaleString('sv-SE',{timeZone:'Europe/Warsaw'}).replace(' ','T')+'Z');
 /* 11.11.2026: signs at the top corners of the chips, size 26 (owner approved mockup Znaki_na_karte.png), top layer so they are never hidden; Heat view only (QA round 2) */
-function drawSigns(s){if(!AL)return;const S=26;MAP.forEach(k=>{const bd=badges(k);if(!bd.ban&&!bd.w)return;const pt=GEO.pts[k];const [lx,ly]=pt.l;const w=84,h=48;const g=el('g',{class:'sgn',transform:`translate(${lx} ${ly})`,style:'pointer-events:none'},s);let bx=w/2+2;const cy=-h/2+1;
+function drawSigns(s){if(!AL)return;const S=26;MAP.forEach(k=>{const bd=badges(k);if(!bd.ban&&!bd.w)return;const pt=GEO.pts[k];const [lx,ly]=pt.l;const w=84,h=48;const g=el('g',{class:'sgn','data-k':k,transform:`translate(${lx} ${ly})`,style:'pointer-events:none'},s);let bx=w/2+2;const cy=-h/2+1;
   if(bd.ban){el('circle',{cx:bx,cy,r:S/2+1.5,style:'fill:#0d1822'},g);signNode(g,'ban',bx-S/2,cy-S/2,S);bx-=S+2}
   if(bd.w){el('path',{d:`M${bx} ${cy-S/2-2.5}L${bx+S/2+3} ${cy+S/2-0.5}H${bx-S/2-3}Z`,style:'fill:#0d1822'},g);signNode(g,bd.w.t,bx-S/2,cy-S/2,S)}})}
 function signNode(g,name,x,y,size){const d=new DOMParser().parseFromString(SIGN[name].replace('<svg ','<svg xmlns="http://www.w3.org/2000/svg" '),'image/svg+xml').documentElement;const n=document.importNode(d,true);n.setAttribute('x',x);n.setAttribute('y',y);n.setAttribute('width',size);n.setAttribute('height',size);g.appendChild(n);return n}
@@ -333,8 +333,8 @@ function alertHtml(k){const B=bans(k),W=weather(k);if(!B.length&&!W.length)retur
   return `<div class="rw"><div class="lgd3">${lg}</div><div class="ds">${cells}</div></div>`}  /* owner 11.11.2026: legend above the calendar */
 function chip(s,k,main,sub,opts={}){
   const pt=(opts.lay||GEO.pts)[k]; const [ax,ay]=pt.a,[lx,ly]=pt.l;
-  if(pt.callout){el('path',{d:`M${lx} ${ly}L${ax} ${ay}`,class:'lead'},s);el('circle',{cx:ax,cy:ay,r:3.2,class:'dot'},s)}
-  const g=el('g',{class:'chip',transform:`translate(${lx} ${ly})`,'data-k':k},s); g.addEventListener('click',()=>tap(()=>pick(k)));
+  if(pt.callout){el('path',{d:`M${lx} ${ly}L${ax} ${ay}`,class:'lead','data-k':k},s);el('circle',{cx:ax,cy:ay,r:3.2,class:'dot','data-k':k},s)}
+  const g=el('g',{class:'chip',transform:`translate(${lx} ${ly})`,'data-k':k,'data-l':lx+','+ly,'data-a':ax+','+ay,'data-c':(pt.callout||Math.hypot(lx-ax,ly-ay)>20)?1:0,'data-w':opts.w||84,'data-h':sub?64:48},s); g.addEventListener('click',()=>tap(()=>pick(k)));
   const w=opts.w||84,h=sub?64:48;
   el('rect',{x:-w/2,y:-h/2,width:w,height:h,rx:9,style:'fill:'+(opts.bg||'#0d1822d0'),stroke:k===sel?'#fff':(opts.stroke||'none'),'stroke-width':2},g);
   el('text',{x:0,y:-h/2+14,'text-anchor':'middle',class:'code',style:opts.bg?'fill:#06121c':''},g,opts.code||(lab(k)+star(k)));
@@ -403,12 +403,37 @@ const HINT0={heat:'Tap a country for details. Swipe to switch views.',
 
 let Z=null; let suppressClick=false; let tapTimer=null;
 function tap(fn){clearTimeout(tapTimer);tapTimer=setTimeout(fn,330)}
+/* 11.11.2026 (owner: "chips move away from their countries when zooming"): when zoomed in, a chip that stands away from its
+   country on the whole map (callout: NL, BE, LU, LV, SI, ...) moves onto its country, as far as it does not cover another chip;
+   the road signs move with their chip, the leader line is hidden once the chip stands on the country */
+function placeChips(svg,cs,zoomed){
+  const key=zoomed?cs.toFixed(4):'0';if(svg._pcKey===key)return;svg._pcKey=key;
+  const L=[...svg.querySelectorAll('g.chip')].map(g=>{const [lx,ly]=g.dataset.l.split(',').map(Number),[ax,ay]=g.dataset.a.split(',').map(Number);
+    const w=(+g.dataset.w+4)*cs,h=(+g.dataset.h+4)*cs,sg=!!svg.querySelector(`.sgn[data-k="${g.dataset.k}"]`),cp=svg.querySelector(`path.c[data-k="${g.dataset.k}"]`);
+    return {g,k:g.dataset.k,lx,ly,ax,ay,x:lx,y:ly,w,h,er:sg?0.25*w:0,et:sg?0.2*w:0,cp,mov:zoomed&&g.dataset.c==='1',on:false}});
+  const box=(c,x,y)=>[x-c.w/2,y-c.h/2-c.et,x+c.w/2+c.er,y+c.h/2]; /* the road sign sticks out at the top right corner */
+  const free=(c,x,y,P)=>{const p=box(c,x,y);return P.every(b=>{const q=box(b,b.x,b.y);return !(p[0]<q[2]&&q[0]<p[2]&&p[1]<q[3]&&q[1]<p[3])})};
+  const inC=(c,x,y)=>{try{return !!c.cp&&c.cp.isPointInFill(new DOMPoint(x,y))}catch(e){return false}};
+  const placed=L.filter(c=>!c.mov);
+  const area=c=>{try{const b=c.cp.getBBox();return b.width*b.height}catch(e){return 1e9}};
+  L.filter(c=>c.mov).sort((a,b)=>area(a)-area(b)).forEach(c=>{
+    /* 1) a free place with the chip centre inside its own country, as close to the country point as possible */
+    const st=Math.min(c.w,c.h)/4,C=[];for(let i=-8;i<=8;i++)for(let j=-8;j<=8;j++)C.push([c.ax+i*st,c.ay+j*st,i*i+j*j]);C.sort((a,b)=>a[2]-b[2]);
+    let f=C.find(([x,y])=>inC(c,x,y)&&free(c,x,y,placed));
+    if(f){c.x=f[0];c.y=f[1];c.on=true}
+    /* 2) otherwise as far towards the country as possible along the leader line */
+    else for(let t=1;t>=0;t-=0.125){const x=c.lx+(c.ax-c.lx)*t,y=c.ly+(c.ay-c.ly)*t;if(t<0.01||free(c,x,y,placed)){c.x=x;c.y=y;c.on=inC(c,x,y);break}}
+    placed.push(c)});
+  L.forEach(c=>{const tr=`translate(${c.x} ${c.y})`+(zoomed?` scale(${cs})`:'');c.g.setAttribute('transform',tr);
+    svg.querySelectorAll(`.sgn[data-k="${c.k}"]`).forEach(n=>n.setAttribute('transform',tr));
+    svg.querySelectorAll(`.lead[data-k="${c.k}"],.dot[data-k="${c.k}"]`).forEach(n=>{n.style.display=c.on?'none':'';if(n.tagName==='path')n.setAttribute('d',`M${c.x} ${c.y}L${c.ax} ${c.ay}`)})})}
 function applyZ(svg){if(!Z)Z={x:0,y:0,w:GEO.W,h:GEO.H};svg.setAttribute('viewBox',`${Z.x} ${Z.y} ${Z.w} ${Z.h}`);const zoomed=Z.w<GEO.W*0.98;svg.classList.toggle('zoomed',zoomed);document.getElementById('zfit').hidden=!zoomed;
   const sc=Z.w/GEO.W;
   /* 11.11.2026 (owner): when zoomed in, price chips grow with the map (3 times bigger at the closest zoom 1:6: 6^0.613=3);
      road signs are scaled together with their chip, so they stay at the chip corner and keep the same size ratio */
   const cs=sc<0.98?Math.pow(sc,1-Math.log(3)/Math.log(6)):1;
-  svg.querySelectorAll('.chip,.bchip,.sgn').forEach(g=>{const b=g.dataset.t||(g.dataset.t=g.getAttribute('transform'));g.setAttribute('transform',sc<0.98?b+` scale(${cs})`:b)});
+  placeChips(svg,cs,sc<0.98);
+  svg.querySelectorAll('.bchip').forEach(g=>{const b=g.dataset.t||(g.dataset.t=g.getAttribute('transform'));g.setAttribute('transform',sc<0.98?b+` scale(${cs})`:b)});
   svg.querySelectorAll('circle.dot').forEach(c=>{const r=c.dataset.r||(c.dataset.r=c.getAttribute('r'));c.setAttribute('r',r*sc)});
   svg.querySelectorAll('.lead').forEach(l=>l.style.strokeWidth=sc);
   svg.querySelectorAll('text.lbl').forEach(x=>{const f=x.dataset.f||(x.dataset.f=x.getAttribute('font-size'));x.setAttribute('font-size',f*cs)})}
