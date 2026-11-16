@@ -179,7 +179,7 @@ svg{display:block;width:100%;height:auto}
 
 <div class="wrap">
 <header>
-  <div class="top"><h1>Best Diesel<br>Prices</h1><div class="dte"><div id="dt"></div><div id="wd"></div><div id="nx"></div></div><button id="rf" type="button" aria-label="Refresh"><svg viewBox="0 0 24 24"><path d="M19 12a7 7 0 1 1-2.05-4.95" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><path d="M19.5 3.5v5h-5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>
+  <div class="top"><h1>Best Diesel<br>Prices</h1><div class="dte"><div id="dt"></div><div id="wd"></div><div id="nx" hidden></div><!-- 16.11.2026 (owner): "next update" not needed --></div><button id="rf" type="button" aria-label="Refresh"><svg viewBox="0 0 24 24"><path d="M19 12a7 7 0 1 1-2.05-4.95" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><path d="M19.5 3.5v5h-5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>
   <div class="seg tabs" id="tabs" role="group" aria-label="Map view">
     <button id="v-heat" data-v="heat" aria-pressed="true">Heat</button>
     <button id="v-borders" data-v="borders" aria-pressed="false">Borders</button>
@@ -515,7 +515,7 @@ document.getElementById('tabs').addEventListener('click',e=>{const v=e.target.da
 
 // auto refresh (owner 11.11.2026, 16.11.2026): right after opening, when the page comes back to the screen and every 10 minutes while visible,
 // check version.json; new prices OR a new version of the map (BUILD) -> reload from the server, so an old link or a cached page never shows old prices
-const BUILD='a6d28d305a';
+const BUILD='f97eeff881';
 document.getElementById('rf').addEventListener('click',()=>{const u=new URL(location.href);u.searchParams.set('r',Date.now());location.replace(u.toString())});
 (function(){const vurl=(LANG==='pl'?'../':'')+'version.json';let busy=false;
  async function check(){if(busy||document.visibilityState!=='visible')return;busy=true;try{const r=await fetch(vurl+'?t='+Date.now(),{cache:'no-store'});if(r.ok){const v=await r.json();const key=v.date+' '+v.time+' '+(v.build||'');let last=null;try{last=JSON.parse(sessionStorage.getItem('reloadFor')||'null')}catch(e){}const rr=+new URLSearchParams(location.search).get('r')||0; /* just reloaded less than a minute ago - no second reload, even without sessionStorage */
