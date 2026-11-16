@@ -101,6 +101,8 @@ svg{display:block;width:100%;height:auto}
 .tg{display:grid;gap:6px}
 .tg button,.shown{height:26px;box-sizing:border-box;display:flex;align-items:center;gap:7px;padding:0 10px 0 6px;border-radius:13px;font:600 11.5px/1 var(--body);white-space:nowrap;min-width:0;background:linear-gradient(180deg,#46525d,#343e47);color:#eef3f6;border:0;box-shadow:0 4px 12px #000b}
 .tg button{cursor:pointer;text-align:left}
+/* 16.11.2026 (owner): partly net - second small line "12 countries" under the switch label */
+.tg button:has(.sub){height:auto;min-height:26px;padding-top:4px;padding-bottom:4px}.tg button .sub{display:block;font-size:9.5px;font-weight:500;color:#b9c6d1;margin-top:2px;line-height:1}
 .tg button i{flex:none;width:26px;height:15px;border-radius:8px;background:#161d24;box-shadow:inset 0 0 0 1px #6b7884;position:relative}
 .tg button i::after{content:"";position:absolute;top:2px;left:2px;width:11px;height:11px;border-radius:50%;background:#fff;box-shadow:0 1px 2px #0007;transition:left .15s}
 .tg button[aria-pressed="true"] i{background:#33c27a;box-shadow:none}
@@ -475,7 +477,7 @@ function render(){
     document.getElementById('blrows').innerHTML=rows.map(o=>`<button data-f="${o.from}" data-t="${o.to}" class="${o.from===borderK||o.to===borderK?'on':''}"><span>${lab(o.from)+star(o.from)} → ${lab(o.to)+star(o.to)}${isFerry(o.from,o.to)?' <em>'+t('ferry')+'</em>':''}</span><b style="color:${bucket(o.c).col}">${Math.round(o.c*100)} ct</b></button>`).join('')}
   gp.innerHTML=BUCKETS.map(b=>`<button data-g="${b.k}" aria-pressed="${GAPS[b.k]}" style="${GAPS[b.k]?'border-color:'+b.col:''}"><i style="${GAPS[b.k]?'background:'+b.col:''}"></i>${b.txt}</button>`).join('');
   document.querySelectorAll('#tabs button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===view));
-  document.getElementById('t-vat').setAttribute('aria-pressed',vatSet.size>0);document.getElementById('t-vat').lastChild.textContent=vatAll()||vatSet.size===0?t('Excluding VAT'):t('Excluding VAT')+': '+vatSet.size;document.getElementById('t-exc').setAttribute('aria-pressed',excOn);extra();
+  document.getElementById('t-vat').setAttribute('aria-pressed',vatSet.size>0);document.getElementById('t-vat').lastChild.innerHTML=vatAll()||vatSet.size===0?t('Excluding VAT'):t('Excluding VAT')+'<small class="sub">'+vatSet.size+' '+(LANG==='pl'?((n=>n===1?'kraj':(n%10>=2&&n%10<=4&&(n%100<12||n%100>14))?'kraje':'krajów')(vatSet.size)):(vatSet.size===1?'country':'countries'))+'</small>';/* 16.11.2026 (owner): number of countries without VAT, with the word */document.getElementById('t-exc').setAttribute('aria-pressed',excOn);extra();
 }
 function spark(h){const w=260,hh=56,mn=Math.min(...h),mx=Math.max(...h),sp=(mx-mn)||0.01;const x=i=>14+i*(w-28)/(h.length-1),y=v=>hh-14-(v-mn)/sp*(hh-36);
   const pts=h.map((v,i)=>x(i)+','+y(v)).join(' ');
@@ -514,7 +516,7 @@ document.getElementById('tabs').addEventListener('click',e=>{const v=e.target.da
 
 // auto refresh (owner 11.11.2026, 16.11.2026): right after opening, when the page comes back to the screen and every 10 minutes while visible,
 // check version.json; new prices OR a new version of the map (BUILD) -> reload from the server, so an old link or a cached page never shows old prices
-const BUILD='e45353a3b9';
+const BUILD='a6d28d305a';
 document.getElementById('rf').addEventListener('click',()=>{const u=new URL(location.href);u.searchParams.set('r',Date.now());location.replace(u.toString())});
 (function(){const vurl=(LANG==='pl'?'../':'')+'version.json';let busy=false;
  async function check(){if(busy||document.visibilityState!=='visible')return;busy=true;try{const r=await fetch(vurl+'?t='+Date.now(),{cache:'no-store'});if(r.ok){const v=await r.json();const key=v.date+' '+v.time+' '+(v.build||'');let last=null;try{last=JSON.parse(sessionStorage.getItem('reloadFor')||'null')}catch(e){}const rr=+new URLSearchParams(location.search).get('r')||0; /* just reloaded less than a minute ago - no second reload, even without sessionStorage */
