@@ -181,6 +181,7 @@ svg{display:block;width:100%;height:auto}
 @media (max-width:339px){#wd{letter-spacing:.08em}}
 /* 16.11.2026: 360-379 px - controls not scaled (scale 1.1 from 380 px), so the text itself is 12 px */
 @media (min-width:360px) and (max-width:379px){.tg button{font-size:12px}.shown{font-size:12px!important}}
+#stagew.zm .ovl,#stagew.zm .shown{visibility:hidden}
 /* 16.11.2026 (owner, phone check): tap areas at least 44 px without changing the look */
 .det .x{position:relative}.det .x::before{content:"";position:absolute;inset:-12px -14px}
 #rf{position:relative}#rf::before{content:"";position:absolute;inset:-8px 0 -8px -8px}
@@ -411,14 +412,14 @@ const views={
    const lay={};Q.forEach(q=>{lay[q.n]={a:GEO.anch[q.n],l:[q.x,q.y],callout:false}});
    const dcol=d=>{const a=Math.abs(d);if(a<0.0095)return '#8b9cab';const t=Math.min(1,0.35+a/0.3*0.65);return d<0?mix('#1b2732',C.good,t):mix('#1b2732',C.bad,t)};
    Q.forEach(q=>{if(q.base) chip(s,q.n,f3(P(q.n)),null,{bg:'#5aa9e6',fg:'#06121c',stroke:'#ffffff',code:lab(q.n)+star(q.n),cp:'· '+t('base'),w:CHW+22,lay});
-     else {const d=P(q.n)-P(base);const bk=bucket(Math.abs(d));chip(s,q.n,ct(d),null,{code:lab(q.n)+star(q.n),cp:f3(P(q.n)),fg:bk?bk.col:'#eaf0f4',lay})}});
+     else {const d=P(q.n)-P(base);const bk=bucket(Math.abs(d));chip(s,q.n,ct(d),null,{code:lab(q.n)+star(q.n),fg:bk?bk.col:'#eaf0f4',lay}) /* 16.11.2026 (owner): country price only in the card on tap */}});
    s.querySelectorAll('.chip').forEach(g=>{const r=g.querySelector('rect');if(!r.getAttribute('style').includes('#0d1822d0'))g.querySelector('.code').style.fill='#06121c'});
    /* 16.11.2026: a country name is removed only when a price chip covers more than 35 % of it (QA: a wider zone removed FR, SI) */
    if(!window.__keepLbl)s.querySelectorAll('text.lbl').forEach(x=>{const lx=+x.getAttribute('x'),ly=+x.getAttribute('y'),hw=x.textContent.length*7.6,a=[lx-hw,ly-22,lx+hw,ly+1],ar=(a[2]-a[0])*(a[3]-a[1]);
      const cov=Math.max(0,...Q.map(q=>Math.max(0,Math.min(a[2],q.x+q.w/2)-Math.max(a[0],q.x-q.w/2))*Math.max(0,Math.min(a[3],q.y+CHH/2)-Math.max(a[1],q.y-CHH/2))));if(cov>0.35*ar)x.remove()});
    return s},
  compare(){const s=svgBase(); const ref=P(refK); paint(s,k=>k===refK?C.ref:rel(P(k)-ref));
-   MAP.forEach(k=>{ if(k===refK) chip(s,k,f3(P(k)),null,{bg:'#5aa9e6',fg:'#06121c',code:lab(k)+star(k)}); else {const d=P(k)-ref; chip(s,k,ct(d),null,{fg:Math.abs(d)<0.0095?'#eaf0f4':d<0?C.good:'#ff7a5a',code:lab(k)+star(k),cp:f3(P(k))})}});
+   MAP.forEach(k=>{ if(k===refK) chip(s,k,f3(P(k)),null,{bg:'#5aa9e6',fg:'#06121c',code:lab(k)+star(k)}); else {const d=P(k)-ref; chip(s,k,ct(d),null,{fg:Math.abs(d)<0.0095?'#eaf0f4':d<0?C.good:'#ff7a5a',code:lab(k)+star(k)}) /* 16.11.2026 (owner): country price only in the card on tap */}});
    return s},
 };
 const HINT0={heat:'Tap a country for details. Swipe to switch views.',
@@ -453,7 +454,7 @@ function placeChips(svg,cs,zoomed){
   L.forEach(c=>{const tr=`translate(${c.x} ${c.y})`+(zoomed?` scale(${cs})`:'');c.g.setAttribute('transform',tr);
     svg.querySelectorAll(`.sgn[data-k="${c.k}"]`).forEach(n=>n.setAttribute('transform',tr));
     svg.querySelectorAll(`.lead[data-k="${c.k}"],.dot[data-k="${c.k}"]`).forEach(n=>{n.style.display=c.on?'none':'';if(n.tagName==='path')n.setAttribute('d',`M${c.x} ${c.y}L${c.ax} ${c.ay}`)})})}
-function applyZ(svg){if(!Z)Z={x:0,y:0,w:GEO.W,h:GEO.H};svg.setAttribute('viewBox',`${Z.x} ${Z.y} ${Z.w} ${Z.h}`);const zoomed=Z.w<GEO.W*0.98;svg.classList.toggle('zoomed',zoomed);document.getElementById('zfit').hidden=!zoomed;
+function applyZ(svg){if(!Z)Z={x:0,y:0,w:GEO.W,h:GEO.H};svg.setAttribute('viewBox',`${Z.x} ${Z.y} ${Z.w} ${Z.h}`);const zoomed=Z.w<GEO.W*0.98;svg.classList.toggle('zoomed',zoomed);{const sw=document.getElementById('stagew');if(sw)sw.classList.toggle('zm',zoomed)} /* 16.11.2026 (owner): switches and Prices hidden while the map is zoomed */document.getElementById('zfit').hidden=!zoomed;
   const sc=Z.w/GEO.W;
   /* 11.11.2026 (owner): when zoomed in, price chips grow with the map (3 times bigger at the closest zoom 1:6: 6^0.613=3);
      road signs are scaled together with their chip, so they stay at the chip corner and keep the same size ratio */
@@ -537,7 +538,7 @@ document.getElementById('tabs').addEventListener('click',e=>{const v=e.target.da
 
 // auto refresh (owner 11.11.2026, 16.11.2026): right after opening, when the page comes back to the screen and every 10 minutes while visible,
 // check version.json; new prices OR a new version of the map (BUILD) -> reload from the server, so an old link or a cached page never shows old prices
-const BUILD='b1d9c8e460';
+const BUILD='9496995a96';
 document.getElementById('rf').addEventListener('click',()=>{const u=new URL(location.href);u.searchParams.set('r',Date.now());location.replace(u.toString())});
 (function(){const vurl=(LANG==='pl'?'../':'')+'version.json';let busy=false;
  async function check(){if(busy||document.visibilityState!=='visible')return;busy=true;try{const r=await fetch(vurl+'?t='+Date.now(),{cache:'no-store'});if(r.ok){const v=await r.json();const key=v.date+' '+v.time+' '+(v.build||'');let last=null;try{last=JSON.parse(sessionStorage.getItem('reloadFor')||'null')}catch(e){}const rr=+new URLSearchParams(location.search).get('r')||0; /* just reloaded less than a minute ago - no second reload, even without sessionStorage */
